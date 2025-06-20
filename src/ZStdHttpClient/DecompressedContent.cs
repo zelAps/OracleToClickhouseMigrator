@@ -1,10 +1,13 @@
 
-// Taken from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/DecompressionHandler.cs
-// The original code is Copyright © .NET Foundation and Contributors. All rights reserved. Licensed under the MIT License (MIT).
+// Заимствовано из https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/DecompressionHandler.cs
+// Оригинальный код распространяется по лицензии MIT.
 using System.Diagnostics;
 using System.Net;
 namespace ZstdHttpClient;
 
+/// <summary>
+/// Базовый класс контента, распаковывающий поток на лету.
+/// </summary>
 public abstract class DecompressedContent : HttpContent
 {
     private readonly HttpContent _originalContent;
@@ -15,9 +18,9 @@ public abstract class DecompressedContent : HttpContent
         _originalContent = originalContent;
         _contentConsumed = false;
 
-        // Copy original response headers, but with the following changes:
-        //   Content-Length is removed, since it no longer applies to the decompressed content
-        //   The last Content-Encoding is removed, since we are processing that here.
+        // Копируем заголовки ответа, корректируя их:
+        //   убираем Content-Length, так как размер меняется после распаковки;
+        //   убираем последний Content-Encoding, который обрабатываем здесь.
         foreach (var (h, v) in originalContent.Headers)
         {
             Headers.Add(h, v);

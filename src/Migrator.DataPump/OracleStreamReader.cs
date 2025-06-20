@@ -30,7 +30,7 @@ public sealed class OracleStreamReader : IAsyncDisposable
         _cmd = conn.CreateCommand();
         _cmd.CommandText = sql;
         _cmd.BindByName = true;
-        _cmd.FetchSize = batchSize * 1024;   // ~1K per row heuristic
+        _cmd.FetchSize = batchSize * 1024;   // приблизительно 1К на строку
 
         if (parameters is not null)
             foreach (var p in parameters) _cmd.Parameters.Add(p);
@@ -38,7 +38,9 @@ public sealed class OracleStreamReader : IAsyncDisposable
         _rdr = _cmd.ExecuteReader(CommandBehavior.SequentialAccess);
     }
 
-    /// <summary>Асинхронная последовательность — каждая итерация = блок строк.</summary>
+    /// <summary>
+    /// Асинхронная последовательность, возвращающая данные порциями.
+    /// </summary>
     public async IAsyncEnumerable<ReadOnlyMemory<object?[]>> ReadAsync(
         [EnumeratorCancellation] CancellationToken ct = default)
     {

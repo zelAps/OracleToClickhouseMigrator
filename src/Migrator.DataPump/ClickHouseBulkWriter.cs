@@ -22,7 +22,7 @@ public sealed class ClickHouseBulkWriter : IAsyncDisposable
         int batchSize = 100_000)
     {
         _conn = new ClickHouseConnection(connectionString);
-        _conn.Open();                         // sync open ok
+        _conn.Open();                         // открываем синхронно, это допустимо
 
         _bulk = new ClickHouseBulkCopy(_conn)
         {
@@ -35,6 +35,9 @@ public sealed class ClickHouseBulkWriter : IAsyncDisposable
         _columnNames = columnNames;
     }
 
+    /// <summary>
+    /// Записывает блок строк в ClickHouse через BulkCopy.
+    /// </summary>
     public async Task WriteAsync(IEnumerable<object?[]> rows,
                                  CancellationToken ct = default)
     {

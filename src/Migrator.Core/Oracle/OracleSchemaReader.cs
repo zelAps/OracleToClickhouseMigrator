@@ -13,6 +13,9 @@ namespace Migrator.Core.Oracle;
 /// <summary>
 /// Извлекает метаданные (список колонок, PK) из Oracle.
 /// </summary>
+/// <summary>
+/// Помощник для чтения схемы Oracle.
+/// </summary>
 public sealed class OracleSchemaReader(string connectionString)
 {
     private readonly string _connectionString = connectionString
@@ -24,6 +27,9 @@ public sealed class OracleSchemaReader(string connectionString)
     /// <summary>
     /// Возвращает полное описание указанной таблицы,
     /// применяя переименования из конфигурации.
+    /// </summary>
+    /// <summary>
+    /// Читает схему таблицы и применяет настройки из конфигурации.
     /// </summary>
     public async Task<TableDef> GetTableAsync(
         MigratorConfig.TableSection cfg,
@@ -54,7 +60,7 @@ public sealed class OracleSchemaReader(string connectionString)
             Source = cfg.Source,
             Target = cfg.Target ?? cfg.Source,
             Columns = columns,
-            Owner = owner,             // 👈
+            Owner = owner,             // сохраняем имя владельца
             PrimaryKey = pk,
             ShardKey = cfg.ShardKey,
             PartitionExpr = BuildPartition(columns)
@@ -63,7 +69,10 @@ public sealed class OracleSchemaReader(string connectionString)
 
     /* ----- приватные методы ----- */
 
-   private static async Task<List<ColumnDef>> GetColumnsAsync(
+    /// <summary>
+    /// Читает список колонок указанной таблицы.
+    /// </summary>
+    private static async Task<List<ColumnDef>> GetColumnsAsync(
     OracleConnection conn, string tableName, string owner, CancellationToken ct)
     {
         const string sql = @"
@@ -108,7 +117,10 @@ ORDER BY COLUMN_ID";
         return list;
     }
 
-private static async Task<List<string>> GetPrimaryKeyAsync(
+    /// <summary>
+    /// Возвращает имена колонок, входящих в первичный ключ.
+    /// </summary>
+    private static async Task<List<string>> GetPrimaryKeyAsync(
     OracleConnection conn, string tableName, string owner, CancellationToken ct)
     {
         const string sql = @"
@@ -134,9 +146,12 @@ ORDER BY acc.POSITION";
         return pk;
     }
 
+    /// <summary>
+    /// Формирует выражение PARTITION BY на основе дат.
+    /// </summary>
     private static string BuildPartition(IEnumerable<ColumnDef> cols)
     {
-        // Простейшая эвристика: ищем date/timestamp колонку c именем like '%date%'
+        // Простая эвристика: ищем колонку типа DATE/TIMESTAMP с именем, содержащим 'date'
         var dateCol = cols.FirstOrDefault(c =>
             c.SourceType.StartsWith("DATE", StringComparison.OrdinalIgnoreCase) ||
             c.SourceType.StartsWith("TIMESTAMP", StringComparison.OrdinalIgnoreCase));
@@ -146,6 +161,9 @@ ORDER BY acc.POSITION";
             : "toYYYYMM(toDate(1))";
     }
 
+    /// <summary>
+    /// Запрашивает имя текущего пользователя Oracle.
+    /// </summary>
     private static async Task<string> GetCurrentUserAsync(
     OracleConnection conn, CancellationToken ct)
     {

@@ -2,6 +2,9 @@
 
 namespace Migrator.Cli;
 
+/// <summary>
+/// Общие параметры командной строки для всех подкоманд.
+/// </summary>
 public class CommonSettings : CommandSettings
 {
     [CommandOption("-c|--config <FILE>")]

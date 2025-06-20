@@ -7,8 +7,14 @@ using System.Collections.Generic;
 
 namespace Migrator.Cli.Commands;
 
+/// <summary>
+/// Переносит данные по всем таблицам из конфигурации.
+/// </summary>
 public sealed class MigrateAllCommand : AsyncCommand<CommonSettings>
 {
+    /// <summary>
+    /// Читает конфиг и запускает перенос данных для каждой таблицы.
+    /// </summary>
     public override async Task<int> ExecuteAsync(CommandContext ctx, CommonSettings s)
     {
         var cfg = await MigratorConfig.LoadAsync(s.ConfigPath);
