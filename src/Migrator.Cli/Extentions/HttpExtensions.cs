@@ -1,10 +1,16 @@
 ﻿using System.Net.Http.Headers;
 namespace ZstdHttpClient;
 
+/// <summary>
+/// Расширения для HttpClient с поддержкой zstd-сжатия.
+/// </summary>
 public static class HttpExtensions
 {
     private static readonly StringWithQualityHeaderValue ZStdHeader = new StringWithQualityHeaderValue("zstd", 1);
 
+    /// <summary>
+    /// Выполняет GET запрос с учётом нужного типа сжатия.
+    /// </summary>
     public static async Task<HttpResponseMessage> GetAsync(
         this HttpClient client,
         string url,

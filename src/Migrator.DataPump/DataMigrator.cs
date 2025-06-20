@@ -28,6 +28,9 @@ public sealed class DataMigrator(
 
     private readonly ILogger _log = Log.ForContext<DataMigrator>();
 
+    /// <summary>
+    /// Запускает полный процесс переноса данных для выбранной таблицы.
+    /// </summary>
     public async Task<TransferStats> RunAsync(string? where, CancellationToken ct = default)
     {
         var stats = new TransferStats();

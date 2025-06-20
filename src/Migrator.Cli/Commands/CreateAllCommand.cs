@@ -8,8 +8,14 @@ using System.Collections.Generic;
 
 namespace Migrator.Cli.Commands;
 
+/// <summary>
+/// Создаёт все таблицы из конфигурации в ClickHouse.
+/// </summary>
 public sealed class CreateAllCommand : AsyncCommand<CommonSettings>
 {
+    /// <summary>
+    /// Читает конфиг, генерирует DDL и выполняет его для каждой таблицы.
+    /// </summary>
     public override async Task<int> ExecuteAsync(CommandContext ctx, CommonSettings s)
     {
         var cfg = await MigratorConfig.LoadAsync(s.ConfigPath);
@@ -31,6 +37,9 @@ public sealed class CreateAllCommand : AsyncCommand<CommonSettings>
         return 0;
     }
 
+    /// <summary>
+    /// Отправляет сгенерированный SQL в ClickHouse.
+    /// </summary>
     private static async Task ExecClickHouseAsync(MigratorConfig cfg, string sql)
     {
         var cs = $"Host=localhost;Database={cfg.ClickHouse.Database}";

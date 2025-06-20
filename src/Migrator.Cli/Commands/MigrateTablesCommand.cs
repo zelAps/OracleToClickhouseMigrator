@@ -8,8 +8,14 @@ using System.Linq;
 
 namespace Migrator.Cli.Commands;
 
+/// <summary>
+/// Переносит данные только для выбранных таблиц.
+/// </summary>
 public sealed class MigrateTablesCommand : AsyncCommand<TableNamesSettings>
 {
+    /// <summary>
+    /// Запускает перенос для указанных таблиц, используя параметры из конфига.
+    /// </summary>
     public override async Task<int> ExecuteAsync(CommandContext ctx, TableNamesSettings s)
     {
         var cfg = await MigratorConfig.LoadAsync(s.ConfigPath);

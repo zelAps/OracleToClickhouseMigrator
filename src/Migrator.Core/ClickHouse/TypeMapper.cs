@@ -35,7 +35,9 @@ public sealed class TypeMapper
             foreach (var (k, v) in extra) _map[k] = v;
     }
 
-    /// <summary>Заполняет поле <see cref="ColumnDef.ClickHouseType"/>.</summary>
+    /// <summary>
+    /// Определяет тип ClickHouse для колонки Oracle и возвращает обновлённый объект.
+    /// </summary>
     public ColumnDef Map(ColumnDef c)
     {
         if (c.SourceType.Equals("NUMBER", StringComparison.OrdinalIgnoreCase))
@@ -53,7 +55,7 @@ public sealed class TypeMapper
         }
 
         if (!_map.TryGetValue(c.SourceType, out var chType))
-            chType = "String";                       // fallback
+            chType = "String";                       // значение по умолчанию
 
         if (c.Nullable && !chType.StartsWith("Nullable"))
             chType = $"Nullable({chType})";

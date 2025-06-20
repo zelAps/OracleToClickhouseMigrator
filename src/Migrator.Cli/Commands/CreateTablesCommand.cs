@@ -8,8 +8,14 @@ using ClickHouse.Client.ADO;
 
 namespace Migrator.Cli.Commands;
 
+/// <summary>
+/// Создаёт только указанные таблицы в ClickHouse.
+/// </summary>
 public sealed class CreateTablesCommand : AsyncCommand<TableNamesSettings>
 {
+    /// <summary>
+    /// Для каждой переданной таблицы строит DDL и выполняет его.
+    /// </summary>
     public override async Task<int> ExecuteAsync(CommandContext ctx, TableNamesSettings s)
     {
         var cfg = await MigratorConfig.LoadAsync(s.ConfigPath);
@@ -44,6 +50,9 @@ public sealed class CreateTablesCommand : AsyncCommand<TableNamesSettings>
 
   
 
+    /// <summary>
+    /// Выполняет набор SQL выражений в ClickHouse.
+    /// </summary>
     private static async Task ExecClickHouseAsync(MigratorConfig cfg, string sql)
     {
         // ① выбираем CS: YAML ➜ env ➜ fallback

@@ -16,6 +16,9 @@ public sealed class ClickHouseDdlBuilder(MigratorConfig cfg)
 
     /* ---------- публичный API ---------- */
 
+    /// <summary>
+    /// Генерирует DDL локальной таблицы ReplicatedMergeTree.
+    /// </summary>
     public string BuildLocal(TableDef t)
     {
         var sb = new StringBuilder();
@@ -39,6 +42,9 @@ public sealed class ClickHouseDdlBuilder(MigratorConfig cfg)
         return sb.ToString();
     }
 
+    /// <summary>
+    /// Генерирует DDL распределённой таблицы.
+    /// </summary>
     public string BuildDistributed(TableDef t)
     {
         var shardKey = t.ShardKey
@@ -72,6 +78,9 @@ public sealed class ClickHouseDdlBuilder(MigratorConfig cfg)
 
     /* ---------- пакетный билд ---------- */
 
+    /// <summary>
+    /// Возвращает полный набор DDL для локальной и распределённой таблиц.
+    /// </summary>
     public string BuildAll(TableDef t)
         => $"{BuildLocal(t)}\n\n{BuildDistributed(t)}";
 }

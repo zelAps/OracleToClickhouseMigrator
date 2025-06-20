@@ -2,6 +2,7 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using Migrator.Cli.Commands;
 
+// Точка входа CLI-приложения.
 var app = new CommandApp();
 
 app.Configure(cfg =>
