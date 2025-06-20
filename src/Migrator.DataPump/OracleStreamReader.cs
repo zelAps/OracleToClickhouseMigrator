@@ -33,7 +33,12 @@ public sealed class OracleStreamReader : IAsyncDisposable
         _cmd.FetchSize = batchSize * 1024;   // приблизительно 1К на строку
 
         if (parameters is not null)
-            foreach (var p in parameters) _cmd.Parameters.Add(p);
+        {
+            foreach (var p in parameters)
+            {
+                _cmd.Parameters.Add(p);
+            }
+        }
 
         _rdr = _cmd.ExecuteReader(CommandBehavior.SequentialAccess);
     }
@@ -46,7 +51,7 @@ public sealed class OracleStreamReader : IAsyncDisposable
     {
         var buffer = new List<object?[]>(_batchSize);
 
-        while (await _rdr.ReadAsync(ct))
+        while (await _rdr.ReadAsync(ct).ConfigureAwait(false))
         {
             var row = new object?[_rdr.FieldCount];
             _rdr.GetValues(row);
@@ -60,12 +65,14 @@ public sealed class OracleStreamReader : IAsyncDisposable
         }
 
         if (buffer.Count > 0)
+        {
             yield return buffer.ToArray();
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        await _rdr.DisposeAsync();
-        await _cmd.DisposeAsync();
+        await _rdr.DisposeAsync().ConfigureAwait(false);
+        await _cmd.DisposeAsync().ConfigureAwait(false);
     }
 }

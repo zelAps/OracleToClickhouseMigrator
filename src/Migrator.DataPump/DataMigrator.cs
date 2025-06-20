@@ -36,7 +36,7 @@ public sealed class DataMigrator(
         var stats = new TransferStats();
 
         await using var orclConn = new OracleConnection(_oracleCs);
-        await orclConn.OpenAsync(ct);
+        await orclConn.OpenAsync(ct).ConfigureAwait(false);
 
         var owner = _tbl.Owner;
         var sourceFull = string.IsNullOrEmpty(owner)
@@ -50,7 +50,7 @@ public sealed class DataMigrator(
         await using (var cntCmd = orclConn.CreateCommand())
         {
             cntCmd.CommandText = $"SELECT COUNT(*) FROM {sourceFull}";
-            var total = Convert.ToInt64(await cntCmd.ExecuteScalarAsync(ct));
+            var total = Convert.ToInt64(await cntCmd.ExecuteScalarAsync(ct).ConfigureAwait(false));
             _log.Information("Oracle rows total = {Total}", total);
         }
 
@@ -65,15 +65,17 @@ public sealed class DataMigrator(
             _batchSize);
 
 
-        await foreach (var block in reader.ReadAsync(ct))
+        await foreach (var block in reader.ReadAsync(ct).ConfigureAwait(false))
         {
             try
             {
-                await writer.WriteAsync(block.Span.ToArray(), ct);
+                await writer.WriteAsync(block.Span.ToArray(), ct).ConfigureAwait(false);
                 stats.Add(block.Length, 0);           // bytes ≈ неточные, можно оценить
 
                 if (stats.Rows % 500_000 == 0 || block.Length < _batchSize)
+                {
                     _log.Information("Copied {Rows} rows so far…", stats.Rows);
+                }
             }
             catch (Exception ex)
             {

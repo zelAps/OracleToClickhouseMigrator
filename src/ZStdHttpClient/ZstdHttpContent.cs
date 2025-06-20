@@ -6,12 +6,8 @@ namespace ZstdHttpClient;
 /// </summary>
 public sealed class ZStdHttpContent : DecompressedContent
 {
-    public ZStdHttpContent(HttpContent originalContent) : base(originalContent)
-    {
-    }
+    public ZStdHttpContent(HttpContent originalContent) : base(originalContent) { }
 
     protected override Stream GetDecompressedStream(Stream originalStream)
-    {
-        return new DecompressionStream(originalStream);
-    }
+        => new DecompressionStream(originalStream);
 }

@@ -18,7 +18,7 @@ public sealed class CreateTablesCommand : AsyncCommand<TableNamesSettings>
     /// </summary>
     public override async Task<int> ExecuteAsync(CommandContext ctx, TableNamesSettings s)
     {
-        var cfg = await MigratorConfig.LoadAsync(s.ConfigPath);
+        var cfg = await MigratorConfig.LoadAsync(s.ConfigPath).ConfigureAwait(false);
         var want = s.TableNames.Select(t => t.ToUpperInvariant()).ToHashSet();
         var mapper = new TypeMapper();
         var reader = new OracleSchemaReader(cfg.Oracle.ConnectionString);
@@ -36,13 +36,17 @@ public sealed class CreateTablesCommand : AsyncCommand<TableNamesSettings>
 
         foreach (var t in targets)
         {
-            var tbl = await reader.GetTableAsync(t, mapper.Map);
+            var tbl = await reader.GetTableAsync(t, mapper.Map).ConfigureAwait(false);
             var sql = ddlBldr.BuildAll(tbl);
 
             if (s.DryRun)
+            {
                 AnsiConsole.MarkupLine($"[blue]{Markup.Escape(sql)}[/]");
+            }
             else
-                await ExecClickHouseAsync(cfg, sql);
+            {
+                await ExecClickHouseAsync(cfg, sql).ConfigureAwait(false);
+            }
         }
 
         return 0;
@@ -61,18 +65,21 @@ public sealed class CreateTablesCommand : AsyncCommand<TableNamesSettings>
               ?? $"Host=localhost;Database={cfg.ClickHouse.Database}";
 
         await using var ch = new ClickHouseConnection(cs);
-        await ch.OpenAsync();
+        await ch.OpenAsync().ConfigureAwait(false);
 
 
         // отправляем DDL по одному выражению
         foreach (var stmt in sql.Split(';', StringSplitOptions.RemoveEmptyEntries))
         {
             var trimmed = stmt.Trim();
-            if (trimmed.Length == 0) continue;
+            if (trimmed.Length == 0)
+            {
+                continue;
+            }
 
             await using var cmd = ch.CreateCommand();
             cmd.CommandText = trimmed;
-            await cmd.ExecuteNonQueryAsync();
+            await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿using Migrator.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Migrator.Core.Models;
 
 namespace Migrator.Core.ClickHouse;
 
@@ -31,34 +31,36 @@ public sealed class TypeMapper
         };
 
         if (extra is not null)
-            foreach (var (k, v) in extra) _map[k] = v;
+        {
+            foreach (var (k, v) in extra)
+            {
+                _map[k] = v;
+            }
+        }
     }
 
     /// <summary>
     /// Определяем тип ClickHouse для колонки Oracle и возвращает обновлённый объект.
     /// </summary>
-    public ColumnDef Map(ColumnDef c)
+    public ColumnDef Map(ColumnDef column)
     {
-        if (c.SourceType.Equals("NUMBER", StringComparison.OrdinalIgnoreCase))
+        column.ClickHouseType = column.SourceType.ToUpperInvariant() switch
         {
-            if ((c.Scale is null or 0) && c.Precision is <= 9)
-                c.ClickHouseType = "Int32";
-            else if ((c.Scale is null or 0) && c.Precision is <= 18)
-                c.ClickHouseType = "Int64";
-            else
-                c.ClickHouseType = $"Decimal({c.Precision ?? 38},{c.Scale ?? 0})";
+            "NUMBER" when column.Scale is null or 0 && column.Precision is <= 9
+                => "Int32",
+            "NUMBER" when column.Scale is null or 0 && column.Precision is <= 18
+                => "Int64",
+            "NUMBER" => $"Decimal({column.Precision ?? 38},{column.Scale ?? 0})",
+            var t when _map.TryGetValue(t, out var mapped) => mapped,
+            _ => "String",
+        };
 
-            if (c.Nullable) c.ClickHouseType = $"Nullable({c.ClickHouseType})";
-            return c;
+        if (column.Nullable &&
+            !column.ClickHouseType.StartsWith("Nullable", StringComparison.Ordinal))
+        {
+            column.ClickHouseType = $"Nullable({column.ClickHouseType})";
         }
 
-        if (!_map.TryGetValue(c.SourceType, out var chType))
-            chType = "String";                       // значение по умолчанию
-
-        if (c.Nullable && !chType.StartsWith("Nullable"))
-            chType = $"Nullable({chType})";
-
-        c.ClickHouseType = chType;
-        return c;
+        return column;
     }
 }

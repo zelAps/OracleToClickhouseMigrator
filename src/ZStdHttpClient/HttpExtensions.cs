@@ -19,14 +19,15 @@ public static class HttpExtensions
         )
     {
         if (cp == CompressionType.Zstd)
+        {
             client.DefaultRequestHeaders.AcceptEncoding.Add(ZStdHeader);
+        }
 
-        var response = await client.GetAsync(url);
+        var response = await client.GetAsync(url).ConfigureAwait(false);
 
         if (cp == CompressionType.Zstd)
         {
             if (response.Content.Headers.ContentEncoding.LastOrDefault() == "zstd")
-
             {
                 response.Content = new ZStdHttpContent(response.Content);
             }
