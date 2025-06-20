@@ -1,7 +1,7 @@
 ﻿namespace Migrator.Core.ClickHouse;
 
 /// <summary>
-/// Формирует корректный ZooKeeper-путь ReplicatedMergeTree.
+/// Формируем корректный ZooKeeper-путь ReplicatedMergeTree.
 /// </summary>
 public static class ZkPathHelper
 {

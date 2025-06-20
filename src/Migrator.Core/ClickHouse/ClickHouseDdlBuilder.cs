@@ -8,13 +8,11 @@ using System.Text;
 namespace Migrator.Core.ClickHouse;
 
 /// <summary>
-/// Генерирует DDL-скрипты для локальных и распределённых таблиц.
+/// Генерируем DDL-скрипты для локальных и распределённых таблиц.
 /// </summary>
 public sealed class ClickHouseDdlBuilder(MigratorConfig cfg)
 {
     private readonly MigratorConfig _cfg = cfg;
-
-    /* ---------- публичный API ---------- */
 
     /// <summary>
     /// Генерирует DDL локальной таблицы ReplicatedMergeTree.
@@ -64,7 +62,6 @@ public sealed class ClickHouseDdlBuilder(MigratorConfig cfg)
         """;
     }
 
-    /* ---------- helpers ---------- */
 
     private static string RenderColumn(ColumnDef c)
         => $"    `{c.TargetName}` {c.ClickHouseType}";
@@ -76,10 +73,9 @@ public sealed class ClickHouseDdlBuilder(MigratorConfig cfg)
                 : Array.Empty<string>())
            .Concat(t.PrimaryKey);
 
-    /* ---------- пакетный билд ---------- */
 
     /// <summary>
-    /// Возвращает полный набор DDL для локальной и распределённой таблиц.
+    /// Возвращаем полный набор DDL для локальной и распределённой таблиц.
     /// </summary>
     public string BuildAll(TableDef t)
         => $"{BuildLocal(t)}\n\n{BuildDistributed(t)}";

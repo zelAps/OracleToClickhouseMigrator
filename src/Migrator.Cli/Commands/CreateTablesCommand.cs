@@ -55,7 +55,7 @@ public sealed class CreateTablesCommand : AsyncCommand<TableNamesSettings>
     /// </summary>
     private static async Task ExecClickHouseAsync(MigratorConfig cfg, string sql)
     {
-        // ① выбираем CS: YAML ➜ env ➜ fallback
+        // выбираем CS: YAML -> env -> fallback
         var cs = cfg.ClickHouse.ConnectionString
               ?? Environment.GetEnvironmentVariable("CH_CS")
               ?? $"Host=localhost;Database={cfg.ClickHouse.Database}";
@@ -64,7 +64,7 @@ public sealed class CreateTablesCommand : AsyncCommand<TableNamesSettings>
         await ch.OpenAsync();
 
 
-        // ③ отправляем DDL по одному выражению
+        // отправляем DDL по одному выражению
         foreach (var stmt in sql.Split(';', StringSplitOptions.RemoveEmptyEntries))
         {
             var trimmed = stmt.Trim();

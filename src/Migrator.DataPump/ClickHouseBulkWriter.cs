@@ -13,7 +13,7 @@ public sealed class ClickHouseBulkWriter : IAsyncDisposable
     private readonly ClickHouseConnection _conn;
     private readonly ClickHouseBulkCopy _bulk;
     private readonly string[] _columnNames;
-    private bool _inited;                       // <-- флаг
+    private bool _inited;                 
 
     public ClickHouseBulkWriter(
         string connectionString,
@@ -22,12 +22,12 @@ public sealed class ClickHouseBulkWriter : IAsyncDisposable
         int batchSize = 100_000)
     {
         _conn = new ClickHouseConnection(connectionString);
-        _conn.Open();                         // открываем синхронно, это допустимо
+        _conn.Open();                         
 
         _bulk = new ClickHouseBulkCopy(_conn)
         {
             DestinationTableName = table,
-            ColumnNames = columnNames,   // <-- задаём сразу
+            ColumnNames = columnNames,
             BatchSize = batchSize,
             MaxDegreeOfParallelism = Environment.ProcessorCount
         };
@@ -36,19 +36,19 @@ public sealed class ClickHouseBulkWriter : IAsyncDisposable
     }
 
     /// <summary>
-    /// Записывает блок строк в ClickHouse через BulkCopy.
+    /// Записываем блок строк в ClickHouse через BulkCopy.
     /// </summary>
     public async Task WriteAsync(IEnumerable<object?[]> rows,
                                  CancellationToken ct = default)
     {
-        // ① первый вызов — инициируем BulkCopy (без аргументов!)
+        // первый вызов — инициируем BulkCopy (без аргументов)
         if (!_inited)
         {
-            await _bulk.InitAsync();  // ← в библиотеке 7.14 именно такой метод
+            await _bulk.InitAsync();  //
             _inited = true;
         }
 
-        // ② формируем DataTable c теми же именами
+        //  формируем DataTable c теми же именами
         var tbl = new DataTable();
         foreach (var col in _columnNames)
             tbl.Columns.Add(new DataColumn(col, typeof(object)));

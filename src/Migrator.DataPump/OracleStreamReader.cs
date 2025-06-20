@@ -11,7 +11,7 @@ namespace Migrator.DataPump;
 
 /// <summary>
 /// Потоково читает данные из Oracle курсором, 
-/// возвращая строки порциями <see cref="BatchSize"/>.
+/// возвращая строки бачами <see cref="BatchSize"/>.
 /// </summary>
 public sealed class OracleStreamReader : IAsyncDisposable
 {

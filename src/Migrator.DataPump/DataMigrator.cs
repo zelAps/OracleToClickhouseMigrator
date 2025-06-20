@@ -13,7 +13,7 @@ using System.Linq;
 namespace Migrator.DataPump;
 
 /// <summary>
-/// Оркестрация: читает → маппит → пишет блоками.
+/// Оркестрация: читаем, маппим, пишем блоками.
 /// </summary>
 public sealed class DataMigrator(
     string oracleCs,

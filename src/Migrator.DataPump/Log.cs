@@ -5,7 +5,7 @@ public static class Log
     public static ILogger ForContext<T>() => _logger.ForContext<T>();
 
     private static readonly ILogger _logger = new LoggerConfiguration()
-        .MinimumLevel.Debug()               // выводим всё, что Log.Information(...)
+        .MinimumLevel.Debug()
         .WriteTo.Console(
             outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}")
         .WriteTo.File(

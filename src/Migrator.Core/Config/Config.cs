@@ -19,7 +19,6 @@ public sealed class MigratorConfig
     public required ClickHouseSection ClickHouse { get; init; }
     public required List<TableSection> Tables { get; init; }
 
-    /* ---------- секции ---------- */
 
     public sealed record OracleSection
     {
@@ -46,7 +45,6 @@ public sealed class MigratorConfig
         public string? Owner { get; init; }
     }
 
-    /* ---------- загрузка ---------- */
 
     public static async Task<MigratorConfig> LoadAsync(string path, CancellationToken ct = default)
     {

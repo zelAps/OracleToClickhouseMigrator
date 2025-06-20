@@ -1,6 +1,3 @@
-
-// Заимствовано из https://github.com/dotnet/runtime/blob/main/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/DecompressionHandler.cs
-// Оригинальный код распространяется по лицензии MIT.
 using System.Diagnostics;
 using System.Net;
 namespace ZstdHttpClient;

@@ -5,8 +5,8 @@ using System.Collections.Generic;
 namespace Migrator.Core.ClickHouse;
 
 /// <summary>
-/// Преобразует Oracle-тип колонки → ClickHouse-тип.
-/// Таблица соответствия может дополняться внешним YAML (`typemap.yaml`).
+/// Преобразуем Oracle-тип колонки в ClickHouse-тип.
+/// Таблица соответствия может дополняться внешним YAML (typemap.yaml).
 /// </summary>
 public sealed class TypeMapper
 {
@@ -24,25 +24,23 @@ public sealed class TypeMapper
             ["BLOB"] = "Nullable(String)",
             ["RAW"] = "Nullable(String)",
             ["DATE"] = "Date32",
-            ["TIMESTAMP"] = "DateTime64(6)",      // точность до мкс
+            ["TIMESTAMP"] = "DateTime64(6)",
             ["BINARY_FLOAT"] = "Float64",
             ["BINARY_DOUBLE"] = "Float64",
             ["FLOAT"] = "Float64",
         };
 
-        // подклеиваем кастомные/переопределённые
         if (extra is not null)
             foreach (var (k, v) in extra) _map[k] = v;
     }
 
     /// <summary>
-    /// Определяет тип ClickHouse для колонки Oracle и возвращает обновлённый объект.
+    /// Определяем тип ClickHouse для колонки Oracle и возвращает обновлённый объект.
     /// </summary>
     public ColumnDef Map(ColumnDef c)
     {
         if (c.SourceType.Equals("NUMBER", StringComparison.OrdinalIgnoreCase))
         {
-            // без scale → целое
             if ((c.Scale is null or 0) && c.Precision is <= 9)
                 c.ClickHouseType = "Int32";
             else if ((c.Scale is null or 0) && c.Precision is <= 18)

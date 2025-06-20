@@ -11,10 +11,10 @@ using System.Linq;
 namespace Migrator.Core.Oracle;
 
 /// <summary>
-/// Извлекает метаданные (список колонок, PK) из Oracle.
+/// Извлекает метаданные из Oracle.
 /// </summary>
 /// <summary>
-/// Помощник для чтения схемы Oracle.
+/// Хэлпер для чтения схемы Oracle.
 /// </summary>
 public sealed class OracleSchemaReader(string connectionString)
 {
@@ -60,14 +60,12 @@ public sealed class OracleSchemaReader(string connectionString)
             Source = cfg.Source,
             Target = cfg.Target ?? cfg.Source,
             Columns = columns,
-            Owner = owner,             // сохраняем имя владельца
+            Owner = owner,        
             PrimaryKey = pk,
             ShardKey = cfg.ShardKey,
             PartitionExpr = BuildPartition(columns)
         };
     }
-
-    /* ----- приватные методы ----- */
 
     /// <summary>
     /// Читает список колонок указанной таблицы.
