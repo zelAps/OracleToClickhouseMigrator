@@ -1,0 +1,3 @@
+# Пример: если в Oracle есть кастомный DOMAIN или пользовательский тип
+MY_DOMAIN_TYPE: Nullable(String)
+XMLTYPE:       String

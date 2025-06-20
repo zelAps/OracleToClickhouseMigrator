@@ -1,0 +1,43 @@
+﻿using Spectre.Console;
+using Spectre.Console.Cli;
+using Migrator.Core.Config;
+using Migrator.Core.ClickHouse;
+using Migrator.Core.Oracle;
+using Migrator.Core.Models;
+using System.Collections.Generic;
+
+namespace Migrator.Cli.Commands;
+
+public sealed class CreateAllCommand : AsyncCommand<CommonSettings>
+{
+    public override async Task<int> ExecuteAsync(CommandContext ctx, CommonSettings s)
+    {
+        var cfg = await MigratorConfig.LoadAsync(s.ConfigPath);
+        TypeMapper mapper = new();
+        var reader = new OracleSchemaReader(cfg.Oracle.ConnectionString);
+        var ddl = new ClickHouseDdlBuilder(cfg);
+
+        foreach (var tblCfg in cfg.Tables)
+        {
+            var tbl = await reader.GetTableAsync(tblCfg, mapper.Map);
+            var sql = ddl.BuildAll(tbl);
+
+            if (s.DryRun)
+                AnsiConsole.Write(new Markup($"[grey]{Markup.Escape(sql)}[/]\n"));
+            else
+                await ExecClickHouseAsync(cfg, sql);
+        }
+
+        return 0;
+    }
+
+    private static async Task ExecClickHouseAsync(MigratorConfig cfg, string sql)
+    {
+        var cs = $"Host=localhost;Database={cfg.ClickHouse.Database}";
+        await using var ch = new ClickHouse.Client.ADO.ClickHouseConnection(cs);
+        await ch.OpenAsync();
+        await using var cmd = ch.CreateCommand();
+        cmd.CommandText = sql;
+        await cmd.ExecuteNonQueryAsync();
+    }
+}

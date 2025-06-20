@@ -1,0 +1,22 @@
+oracle:
+  connection_string: "User Id=app;Password=app;Data Source=//oracle-xe:1521/XEPDB1"
+
+clickhouse:
+  cluster: "default"
+  zk_path_prefix: "/clickhouse/tables"
+  database: "target_db"
+  replicas: ["replica01", "replica02"]
+  distributed_shard_key: "region_id"   # общий по умолчанию
+
+tables:
+  # полная миграция таблицы без переименований
+  - source: DEPARTMENTS
+
+  # частичная миграция + rename полей
+  - source: EMPLOYEES
+    target: EMPLOYEES_NEW
+    rename_fields:
+      EMP_ID: ID
+      EMP_NAME: FULL_NAME
+    where: "CREATE_DATE > TO_DATE('2024-01-01','YYYY-MM-DD')"
+    shard_key: "region_id"

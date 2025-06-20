@@ -1,0 +1,16 @@
+oracle:
+  connection_string: |
+    User Id=NDS2_MRR_USER;Password=NDS2_MRR_USER;
+    Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=adp-nds2-db-5.adp.local)(PORT=1521))
+    (CONNECT_DATA=(SERVICE_NAME=NDS2)))
+
+click_house:
+  connection_string: 'Host=adp-nds2-iz-k-1.adp.local;Port=30123;Database=migration_test;Compression=true;Protocol=http;User=default;Password=7fAyriliLX;'
+  cluster: default
+  database: migration_test
+  zk_path_prefix: /clickhouse/tables
+  replicas: ["clickhouse-shard0-0", "clickhouse-shard0-1", "clickhouse-shard1-0", "clickhouse-shard1-1"]
+
+tables:
+  - source: DECLARATION_ACTIVE
+    owner:  NDS2_MRR_USER

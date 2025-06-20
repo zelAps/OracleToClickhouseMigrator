@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  oracle:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: oracle-xe
+    environment:
+      ORACLE_PASSWORD: app
+      APP_USER: app
+      APP_USER_PASSWORD: app
+    ports:
+      - "1521:1521"           
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo 'select 1 from dual;' | sqlplus -S app/app@XEPDB1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    ports: [2181:2181]
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24-alpine
+    depends_on: [zookeeper]
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      - CLICKHOUSE_DB=target_db
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=
+      - ZOOKEEPER_NODES=zookeeper:2181
+    volumes:
+      - ./clickhouse-config.xml:/etc/clickhouse-server/config.d/zookeeper.xml:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10

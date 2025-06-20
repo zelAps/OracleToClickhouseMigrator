@@ -1,0 +1,56 @@
+image: mcr.microsoft.com/dotnet/sdk:8.0
+
+variables:
+  DOCKER_DRIVER: overlay2
+  # адрес реестровой группы; поменяйте при необходимости
+  CI_REGISTRY_IMAGE: "$CI_REGISTRY/my-group/oracle-to-ch-migrator"
+
+services:
+  - name: docker:dind
+    command: ["--mtu=1200"]   # (опционально — fix VPN issues)
+
+stages:
+  - build
+  - test
+  - docker
+
+before_script:
+  - dotnet --info
+  # для docker-login к GitLab registry
+  - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin "$CI_REGISTRY"
+
+build:
+  stage: build
+  script:
+    - dotnet restore
+    - dotnet build -c Release
+  artifacts:
+    paths:
+      - src/**/bin/Release/
+    expire_in: 1 hour
+
+test:
+  stage: test
+  needs: ["build"]
+  services:
+    - name: clickhouse/clickhouse-server:24-alpine
+      alias: clickhouse
+    - name: gvenzl/oracle-xe:21-slim
+      alias: oracle
+      variables:
+        ORACLE_PASSWORD: app
+        APP_USER: app
+        APP_USER_PASSWORD: app
+  script:
+    - dotnet test -c Release --no-build
+
+docker-image:
+  stage: docker
+  needs: ["build"]
+  script:
+    # публикуем self-contained CLI
+    - dotnet publish src/Migrator.Cli -c Release -o publish
+    - docker build -t "$CI_REGISTRY_IMAGE:latest" .
+    - docker push "$CI_REGISTRY_IMAGE:latest"
+  only:
+    - main        # пушим образ только в главную ветку
