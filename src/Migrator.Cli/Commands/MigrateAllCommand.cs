@@ -17,19 +17,19 @@ public sealed class MigrateAllCommand : AsyncCommand<CommonSettings>
     /// </summary>
     public override async Task<int> ExecuteAsync(CommandContext ctx, CommonSettings s)
     {
-        var cfg = await MigratorConfig.LoadAsync(s.ConfigPath);
+        var cfg = await MigratorConfig.LoadAsync(s.ConfigPath).ConfigureAwait(false);
         var mapper = new TypeMapper();
         var reader = new OracleSchemaReader(cfg.Oracle.ConnectionString);
 
         foreach (var t in cfg.Tables)
         {
-            var tbl = await reader.GetTableAsync(t, mapper.Map);
+            var tbl = await reader.GetTableAsync(t, mapper.Map).ConfigureAwait(false);
             var pump = new DataMigrator(
                 cfg.Oracle.ConnectionString,
                 $"Host=localhost;Database={cfg.ClickHouse.Database}",
                 tbl);
 
-            await pump.RunAsync(t.Where ?? string.Empty);
+            await pump.RunAsync(t.Where ?? string.Empty).ConfigureAwait(false);
         }
 
         return 0;

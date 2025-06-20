@@ -47,9 +47,13 @@ public sealed class OracleSchemaReader(string connectionString)
         foreach (var c in columns)
         {
             if (cfg.RenameFields?.TryGetValue(c.SourceName, out var newName) == true)
+            {
                 c.TargetName = newName;
+            }
             else
+            {
                 c.TargetName = c.SourceName.ToLowerInvariant();
+            }
 
             // трансформируем в ClickHouse-тип
             c.ClickHouseType = mapToClickHouse(c).ClickHouseType;

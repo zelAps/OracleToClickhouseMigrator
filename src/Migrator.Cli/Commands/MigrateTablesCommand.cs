@@ -18,7 +18,7 @@ public sealed class MigrateTablesCommand : AsyncCommand<TableNamesSettings>
     /// </summary>
     public override async Task<int> ExecuteAsync(CommandContext ctx, TableNamesSettings s)
     {
-        var cfg = await MigratorConfig.LoadAsync(s.ConfigPath);
+        var cfg = await MigratorConfig.LoadAsync(s.ConfigPath).ConfigureAwait(false);
 
         Console.WriteLine($"Args: [{string.Join(",", s.TableNames ?? Array.Empty<string>())}]");
 
@@ -46,7 +46,7 @@ public sealed class MigrateTablesCommand : AsyncCommand<TableNamesSettings>
 
         foreach (var t in toMove)
         {
-            var tbl = await reader.GetTableAsync(t, mapper.Map);
+            var tbl = await reader.GetTableAsync(t, mapper.Map).ConfigureAwait(false);
             var pump = new DataMigrator(
                 cfg.Oracle.ConnectionString,
                       cfg.ClickHouse.ConnectionString
@@ -54,7 +54,7 @@ public sealed class MigrateTablesCommand : AsyncCommand<TableNamesSettings>
                           ?? $"Host=localhost;Database={cfg.ClickHouse.Database}",
                 tbl);
 
-            await pump.RunAsync(t.Where ?? string.Empty);
+            await pump.RunAsync(t.Where ?? string.Empty).ConfigureAwait(false);
         }
 
         return 0;

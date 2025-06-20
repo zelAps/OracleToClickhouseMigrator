@@ -23,4 +23,4 @@ app.Configure(cfg =>
     cfg.PropagateExceptions();
 });
 
-return await app.RunAsync(args);
+return await app.RunAsync(args).ConfigureAwait(false);

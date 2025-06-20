@@ -18,20 +18,24 @@ public sealed class CreateAllCommand : AsyncCommand<CommonSettings>
     /// </summary>
     public override async Task<int> ExecuteAsync(CommandContext ctx, CommonSettings s)
     {
-        var cfg = await MigratorConfig.LoadAsync(s.ConfigPath);
+        var cfg = await MigratorConfig.LoadAsync(s.ConfigPath).ConfigureAwait(false);
         TypeMapper mapper = new();
         var reader = new OracleSchemaReader(cfg.Oracle.ConnectionString);
         var ddl = new ClickHouseDdlBuilder(cfg);
 
         foreach (var tblCfg in cfg.Tables)
         {
-            var tbl = await reader.GetTableAsync(tblCfg, mapper.Map);
+            var tbl = await reader.GetTableAsync(tblCfg, mapper.Map).ConfigureAwait(false);
             var sql = ddl.BuildAll(tbl);
 
             if (s.DryRun)
+            {
                 AnsiConsole.Write(new Markup($"[grey]{Markup.Escape(sql)}[/]\n"));
+            }
             else
-                await ExecClickHouseAsync(cfg, sql);
+            {
+                await ExecClickHouseAsync(cfg, sql).ConfigureAwait(false);
+            }
         }
 
         return 0;
@@ -44,9 +48,9 @@ public sealed class CreateAllCommand : AsyncCommand<CommonSettings>
     {
         var cs = $"Host=localhost;Database={cfg.ClickHouse.Database}";
         await using var ch = new ClickHouse.Client.ADO.ClickHouseConnection(cs);
-        await ch.OpenAsync();
+        await ch.OpenAsync().ConfigureAwait(false);
         await using var cmd = ch.CreateCommand();
         cmd.CommandText = sql;
-        await cmd.ExecuteNonQueryAsync();
+        await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
     }
 }
